@@ -39,6 +39,7 @@
 }
 
 -(void)addPinPointsForNewTweets:(NSArray *)newTweets{
+    
     for (int i = 0; i < newTweets.count; i++) {
         IRTTweet *tweet = [newTweets objectAtIndex:i];
         
@@ -47,25 +48,27 @@
         ctrpoint.longitude = tweet.longitude.doubleValue;
         IRTTweetPosition *addAnnotation = [[IRTTweetPosition alloc] init];
         [addAnnotation setCoordinate:ctrpoint];
+        [addAnnotation setTweetId:tweet.twitterStringId];
         [mapView addAnnotation:addAnnotation];
         
     }
 }
 
--(void)removePinPointsForTweetId:(NSString *)tweetId{
+-(void)removePinPointsForOldTweets:(NSArray *)oldTweetsId{
     
-    NSLog(@"tweetId %@", tweetId);
-    
-    NSPredicate *predicate =
-    [NSPredicate predicateWithFormat:@"self.tweetId = %@", tweetId];
-    NSArray *tempDatas = [mapView.annotations filteredArrayUsingPredicate:predicate];
-    
-    if (tempDatas.count > 0) {
+    for (int i = 0; i < oldTweetsId.count; i++) {
         
-        NSLog(@"AFTER FOR A");
+        NSString *tweetId = [oldTweetsId objectAtIndex:i];
         
-        IRTTweetPosition *annotationToRemove = (IRTTweetPosition *)[tempDatas objectAtIndex:0];
-        [mapView removeAnnotation:annotationToRemove];
+        NSPredicate *predicate =
+            [NSPredicate predicateWithFormat:@"self.tweetId = %@", tweetId];
+        
+        NSArray *tempDatas = [mapView.annotations filteredArrayUsingPredicate:predicate];
+        for (int j = 0; j < tempDatas.count; j++) {
+            IRTTweetPosition *annotationToRemove = (IRTTweetPosition *)[tempDatas objectAtIndex:j];
+            [mapView removeAnnotation:annotationToRemove];
+        }
+        
     }
     
 }

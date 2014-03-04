@@ -20,6 +20,6 @@
 
 -(void)addPinPointsForNewTweets:(NSArray *)newTweets;
 
--(void)removePinPointsForTweetId:(NSString *)tweetId;
+-(void)removePinPointsForOldTweets:(NSArray *)oldTweetsId;
 
 @end

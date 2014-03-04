@@ -203,7 +203,6 @@
                                             
                                             [request setAccount:account];
                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                            //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
                                                 streamingConnection = [NSURLConnection connectionWithRequest:[request preparedURLRequest] delegate:self];
                                                 [streamingConnection start];
                                             });
@@ -214,39 +213,8 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
     
-    //NSLog(@"didReceiveData %d", [NSThread isMainThread]);
+    [self performSelectorInBackground:@selector(bgTreatmentNewData:) withObject:data];
     
-    //dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        [self bgTreatmentNewData:data];
-    //});
-    
-    /*
-    NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSArray *splitRes = [dataString componentsSeparatedByString:@"\r\n"];
-    
-    NSMutableArray *res = [[NSMutableArray alloc] init];
-    
-    for (int i = 0; i < splitRes.count; i++) {
-        
-        NSData *ndata = [[splitRes objectAtIndex:i] dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:ndata options:0 error:nil];
-        
-        if (json) {
-            
-            [self.backgroundContext performBlockAndWait:^{
-                IRTTweet *t = [IRTTweet loadFromJSON:json inManagedObjectContext:self.backgroundContext];
-                if (t) {
-                    [self.backgroundContext save:nil];
-                    [res addObject:t];
-                }
-            }];
-            
-        }
-    }
-    
-    [self manageImportNewTwitterData:res];
-    
-    */
 }
 
 -(void) launchTwitterStreamingRequestWithRecipient:(IRTFirstViewController *)vc{
@@ -260,8 +228,6 @@
 }
 
 -(void)bgTreatmentNewData:(NSData *)data {
-    
-    //NSLog(@"bgTreatmentNewData %d", [NSThread isMainThread]);
     
     NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSArray *splitRes = [dataString componentsSeparatedByString:@"\r\n"];
@@ -293,17 +259,31 @@
 
 -(void)manageImportNewTwitterData:(NSArray *)dataToImport{
     
-    //NSLog(@"manageImportNewTwitterData %d", [NSThread isMainThread]);
-    
     [self cleanTooOldTweets];
     
     if (viewController) {
         
-        //dispatch_async(dispatch_get_main_queue(), ^{
-            [viewController addPinPointsForNewTweets:dataToImport];
-        //});
+        NSMutableArray *res = [[NSMutableArray alloc] init];
+        
+        for (int a = 0; a < dataToImport.count; a++) {
+            IRTTweet *tweet = [dataToImport objectAtIndex:a];
+            [res addObject:tweet.twitterStringId];
+        }
+        
+        [self performSelectorOnMainThread:@selector(sendNewTwitterData:) withObject:res waitUntilDone:TRUE];
         
     }
+}
+
+-(void)sendNewTwitterData:(NSArray *)dataToImport{
+    
+    NSFetchRequest *request=[[NSFetchRequest alloc] init];
+    request.entity = [NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.mainContext];
+    request.predicate = [NSPredicate predicateWithFormat:@"self.twitterStringId IN %@", dataToImport];
+    NSArray *res = [self.mainContext executeFetchRequest:request error:nil];
+    
+    [viewController performSelectorOnMainThread:@selector(addPinPointsForNewTweets:) withObject:res waitUntilDone:TRUE];
+    
 }
 
 -(NSArray *) getTweetsForMap{
@@ -326,26 +306,39 @@
 
 -(void)cleanTooOldTweets{
     
-    //NSLog(@"cleanTooOldTweets %d", [NSThread isMainThread]);
+    __block
+    NSMutableArray *toDelete = [[NSMutableArray alloc] init];
     
-    NSFetchRequest *request=[[NSFetchRequest alloc] init];
-    request.entity=[NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.backgroundContext];
-    request.predicate=[NSPredicate predicateWithFormat:@"creation < %@",[NSDate dateWithTimeIntervalSinceNow:-TOO_OLD_TO_STAY]];
-    NSArray *res = [self.backgroundContext executeFetchRequest:request error:nil];
+    [self.backgroundContext performBlockAndWait:^{
+        NSFetchRequest *request=[[NSFetchRequest alloc] init];
+        request.entity=[NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.backgroundContext];
+        request.predicate=[NSPredicate predicateWithFormat:@"creation < %@",[NSDate dateWithTimeIntervalSinceNow:-TOO_OLD_TO_STAY]];
+        NSArray *res = [self.backgroundContext executeFetchRequest:request error:nil];
+        
+        for (int j = 0; j < res.count; j ++) {
+            IRTTweet *tweetToDelete = [res objectAtIndex:j];
+            [self.backgroundContext deleteObject:tweetToDelete];
+            
+            [toDelete addObject:tweetToDelete.twitterStringId];
+            
+        }
+        [self.backgroundContext save:nil];
+    }];
     
-    for (int j = 0; j < res.count; j ++) {
-        IRTTweet *tweetToDelete = [res objectAtIndex:j];
-        [self.backgroundContext deleteObject:tweetToDelete];
-        
-        NSLog(@"FOR A");
-        
-        //dispatch_async(dispatch_get_main_queue(), ^{
-            [viewController removePinPointsForTweetId:tweetToDelete.twitterStringId];
-        //});
-        
-    }
-    [self.backgroundContext save:nil];
+    [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:toDelete waitUntilDone:TRUE];
     
 }
+
+-(void)removeOldTwitterData:(NSArray *)dataToRemove{
+    
+    NSFetchRequest *request=[[NSFetchRequest alloc] init];
+    request.entity = [NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.mainContext];
+    request.predicate = [NSPredicate predicateWithFormat:@"self.twitterStringId IN %@", dataToRemove];
+    NSArray *res = [self.mainContext executeFetchRequest:request error:nil];
+    
+    [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:res waitUntilDone:TRUE];
+    
+}
+
 
 @end

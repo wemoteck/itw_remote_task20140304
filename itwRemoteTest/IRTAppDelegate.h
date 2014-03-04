@@ -8,12 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-//@class IRTDataManager;
-
 @interface IRTAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-
-//@property (nonatomic, retain) IRTDataManager *dataManager;
 
 @end

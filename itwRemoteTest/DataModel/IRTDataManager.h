@@ -52,4 +52,6 @@
 
 -(void) cleanTooOldTweets;
 
+-(void)sendNewTwitterData:(NSArray *)dataToImport;
+
 @end
