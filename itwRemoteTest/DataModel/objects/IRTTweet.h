@@ -15,25 +15,30 @@
 @interface IRTTweet : NSManagedObject
 
 //64 bits Integer representing the id of the Tweet in the Tweeter base.
+//Should not be used as primary key. json key value = id
 @property (nonatomic, retain) NSNumber * twitterId;
 
 //Double representing the latitude of the Tweet if available.
+//json key value = second object into array of the coordinates object.
+//GeoJSON format.
 @property (nonatomic, retain) NSNumber * latitude;
 
 //Double representing the longitude of the Tweet if available.
+//json key value = first object into array of the coordinates object.
+//GeoJSON format.
 @property (nonatomic, retain) NSNumber * longitude;
 
 //Date the tweet was created, according to Twitter information.
+//json key value = created_at
 @property (nonatomic, retain) NSDate * creation;
 
 //String representation of the id of the Tweet in the Tweeter base.
+//json key value = id_str. Used here as a primary key.
 @property (nonatomic, retain) NSString * twitterStringId;
 
 //Text content of the Tweet.
+//json key value = text
 @property (nonatomic, retain) NSString * twContent;
-
-/*  These function is not needed by the required implementation */
-//+(NSDictionary *)getJSONFromObject:(IRTTweet *)object;
 
 //Returns an IRTTweet object from the json data issued by the Twitter API.
 +(IRTTweet *)loadFromJSON:(NSDictionary *)json inManagedObjectContext:(NSManagedObjectContext *)moc;

@@ -83,7 +83,6 @@
 -(void)viewWillDisappear:(BOOL)animated{
     
     [dataManager stopTwitterStreamingRequest];
-    [dataManager cleanUpRequests];
     
     [super viewWillDisappear:animated];
 }

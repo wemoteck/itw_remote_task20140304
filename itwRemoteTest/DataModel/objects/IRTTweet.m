@@ -11,17 +11,19 @@
 
 @implementation IRTTweet
 
-@dynamic twitterId;//id
-@dynamic latitude;//coordinates
+@dynamic twitterId;
+@dynamic latitude;
 @dynamic longitude;
-@dynamic creation;//created_at
-@dynamic twitterStringId;//id_str
-@dynamic twContent;//text
+@dynamic creation;
+@dynamic twitterStringId;
+@dynamic twContent;
 
 +(IRTTweet *)loadFromJSON:(NSDictionary *)json inManagedObjectContext:(NSManagedObjectContext *)moc{
     
     IRTTweet *res;
     
+    //We first check if the tweet has geographical coordinates as in this test
+    //we only care to display a pinpoint on a map.
     NSDictionary *coordinates = [json objectForKey:@"coordinates"];
     
     if (! coordinates || [NSStringFromClass(coordinates.class) isEqualToString:@"NSNull"]) {
@@ -45,7 +47,6 @@
         res = [NSEntityDescription insertNewObjectForEntityForName:@"IRTTweet" inManagedObjectContext:moc];
     }
     
-    
     res.twitterId = [NSNumber numberWithInteger:t.integerValue];
     
     t = [json objectForKey:@"created_at"];
@@ -57,27 +58,23 @@
     
     res.twContent = [json objectForKey:@"text"];
     
-    //Here, we treat the coordinates formatted as geoJSON
-    //NSDictionary *coordinates = [json objectForKey:@"coordinates"];
+    //We already know here this JSON object got latitude and longitude for us.
+    NSString *coordinatesType = [coordinates objectForKey:@"type"];
     
-    //if (coordinates && ! [NSStringFromClass(coordinates.class) isEqualToString:@"NSNull"]) {
-        NSString *coordinatesType = [coordinates objectForKey:@"type"];
+    //We just check that a point is given and not another kind of geographical data.
+    if (coordinatesType && [coordinatesType isEqualToString:@"Point"]) {
         
-        if (coordinatesType && [coordinatesType isEqualToString:@"Point"]) {
+        NSArray *coordinate = [coordinates objectForKey:@"coordinates"];
+        
+        if (coordinate && coordinate.count == 2) {
+            NSString *tempLongitude = [coordinate objectAtIndex:0];
+            NSString *tempLatitude = [coordinate objectAtIndex:1];
             
-            NSArray *coordinate = [coordinates objectForKey:@"coordinates"];
-            
-            if (coordinate && coordinate.count == 2) {
-                NSString *tempLongitude = [coordinate objectAtIndex:0];
-                NSString *tempLatitude = [coordinate objectAtIndex:1];
-                
-                res.longitude = [[NSNumber alloc] initWithDouble:tempLongitude.doubleValue];
-                res.latitude = [[NSNumber alloc] initWithDouble:tempLatitude.doubleValue];
-            }
-            
+            res.longitude = [[NSNumber alloc] initWithDouble:tempLongitude.doubleValue];
+            res.latitude = [[NSNumber alloc] initWithDouble:tempLatitude.doubleValue];
         }
         
-    //}
+    }
     
     return res;
     
@@ -87,6 +84,8 @@
 +(IRTTweet *)loadFromPrimaryKey:(NSNumber *)pk inManagedObjectContext:(NSManagedObjectContext *)moc{
     IRTTweet *res;
     
+    //We do not use this function in this project, regarding its simplicity
+    //and the manipulated object (in this case, object are not updated).
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"IRTTweet"];
     [request setPredicate:[NSPredicate predicateWithFormat:@"%K = %@", @"twitterId", pk]];
     [request setReturnsObjectsAsFaults:FALSE];
@@ -106,6 +105,7 @@
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
 
     [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+    //Format of the date returned by Twitter as specified into their documentation.
     [dateFormatter setDateFormat:@"EEE MMM dd HH:mm:ss Z yyyy"];
     
     NSDate *timeStamp = [dateFormatter dateFromString:dateString];

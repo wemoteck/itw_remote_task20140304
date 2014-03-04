@@ -26,20 +26,12 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSavePrivateQueueContext:)name:NSManagedObjectContextDidSaveNotification object:[self backgroundContext]];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSaveMainQueueContext:) name:NSManagedObjectContextDidSaveNotification object:[self mainContext]];
         
-        //appDelegate = (CTMAppDelegate *)[[UIApplication sharedApplication] delegate];
-        
-        queue = [[NSOperationQueue alloc] init];
-        
     }
     return self;
 }
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
--(void)cleanUpRequests{
-    [queue cancelAllOperations];
 }
 
 - (void)contextDidSavePrivateQueueContext:(NSNotification *)notification {
@@ -267,6 +259,7 @@
         
         for (int a = 0; a < dataToImport.count; a++) {
             IRTTweet *tweet = [dataToImport objectAtIndex:a];
+            //qq
             [res addObject:tweet.twitterStringId];
         }
         
@@ -326,17 +319,6 @@
     }];
     
     [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:toDelete waitUntilDone:TRUE];
-    
-}
-
--(void)removeOldTwitterData:(NSArray *)dataToRemove{
-    
-    NSFetchRequest *request=[[NSFetchRequest alloc] init];
-    request.entity = [NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.mainContext];
-    request.predicate = [NSPredicate predicateWithFormat:@"self.twitterStringId IN %@", dataToRemove];
-    NSArray *res = [self.mainContext executeFetchRequest:request error:nil];
-    
-    [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:res waitUntilDone:TRUE];
     
 }
 
