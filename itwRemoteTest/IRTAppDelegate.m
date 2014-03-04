@@ -14,6 +14,8 @@
 
 @synthesize dataManager;
 
+NSString * const twitterAPIkey = @"RQApeOdWkvj3PtR9xPIrnw";
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.

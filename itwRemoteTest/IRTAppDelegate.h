@@ -12,6 +12,8 @@
 
 @interface IRTAppDelegate : UIResponder <UIApplicationDelegate>
 
+extern NSString * const twitterAPIkey;
+
 @property (strong, nonatomic) UIWindow *window;
 
 @property (nonatomic, retain) IRTDataManager *dataManager;

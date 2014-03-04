@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-@interface IRTFirstViewController : UIViewController
+#import <MapKit/MapKit.h>
+
+@interface IRTFirstViewController : UIViewController<MKMapViewDelegate, UISearchBarDelegate>
+
+@property (nonatomic, retain) IBOutlet MKMapView *mapView;
+
+@property (nonatomic, retain) IBOutlet UISearchBar *searchBar;
+
+@property (nonatomic, retain) IBOutlet UIToolbar *toolBar;
 
 @end
