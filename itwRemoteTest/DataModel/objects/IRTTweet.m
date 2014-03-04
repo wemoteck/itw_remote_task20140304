@@ -22,6 +22,12 @@
     
     IRTTweet *res;
     
+    NSDictionary *coordinates = [json objectForKey:@"coordinates"];
+    
+    if (! coordinates || [NSStringFromClass(coordinates.class) isEqualToString:@"NSNull"]) {
+        return nil;
+    }
+    
     NSString *t = [json objectForKey:@"id"];
     NSNumber *twId = [NSNumber numberWithInteger:t.integerValue];
     
@@ -49,9 +55,12 @@
     
     res.twitterStringId = [json objectForKey:@"id_str"];
     
+    res.twContent = [json objectForKey:@"text"];
+    
     //Here, we treat the coordinates formatted as geoJSON
-    NSDictionary *coordinates = [json objectForKey:@"coordinates"];
-    if (coordinates) {
+    //NSDictionary *coordinates = [json objectForKey:@"coordinates"];
+    
+    //if (coordinates && ! [NSStringFromClass(coordinates.class) isEqualToString:@"NSNull"]) {
         NSString *coordinatesType = [coordinates objectForKey:@"type"];
         
         if (coordinatesType && [coordinatesType isEqualToString:@"Point"]) {
@@ -68,7 +77,7 @@
             
         }
         
-    }
+    //}
     
     return res;
     

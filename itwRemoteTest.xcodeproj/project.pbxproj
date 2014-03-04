@@ -15,7 +15,6 @@
 		203A208318C5F95B00156E43 /* IRTAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 203A208218C5F95B00156E43 /* IRTAppDelegate.m */; };
 		203A208618C5F95B00156E43 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 203A208418C5F95B00156E43 /* Main.storyboard */; };
 		203A208918C5F95B00156E43 /* IRTFirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 203A208818C5F95B00156E43 /* IRTFirstViewController.m */; };
-		203A208C18C5F95B00156E43 /* IRTSecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 203A208B18C5F95B00156E43 /* IRTSecondViewController.m */; };
 		203A208E18C5F95B00156E43 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 203A208D18C5F95B00156E43 /* Images.xcassets */; };
 		203A209518C5F95B00156E43 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 203A209418C5F95B00156E43 /* XCTest.framework */; };
 		203A209618C5F95B00156E43 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 203A207218C5F95B00156E43 /* Foundation.framework */; };
@@ -27,6 +26,8 @@
 		2069E16318C60C05002872B2 /* IRTDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2069E16218C60C05002872B2 /* IRTDataManager.m */; };
 		2069E16518C61D96002872B2 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2069E16418C61D96002872B2 /* CoreData.framework */; };
 		2069E16718C61D9C002872B2 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2069E16618C61D9C002872B2 /* MapKit.framework */; };
+		2069E16E18C62CCB002872B2 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2069E16C18C62A79002872B2 /* Social.framework */; };
+		2069E17118C64E92002872B2 /* IRTTweetPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2069E17018C64E92002872B2 /* IRTTweetPosition.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,8 +54,6 @@
 		203A208518C5F95B00156E43 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		203A208718C5F95B00156E43 /* IRTFirstViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRTFirstViewController.h; sourceTree = "<group>"; };
 		203A208818C5F95B00156E43 /* IRTFirstViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRTFirstViewController.m; sourceTree = "<group>"; };
-		203A208A18C5F95B00156E43 /* IRTSecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRTSecondViewController.h; sourceTree = "<group>"; };
-		203A208B18C5F95B00156E43 /* IRTSecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRTSecondViewController.m; sourceTree = "<group>"; };
 		203A208D18C5F95B00156E43 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		203A209318C5F95B00156E43 /* itwRemoteTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = itwRemoteTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		203A209418C5F95B00156E43 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -68,6 +67,9 @@
 		2069E16218C60C05002872B2 /* IRTDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IRTDataManager.m; path = DataModel/IRTDataManager.m; sourceTree = "<group>"; };
 		2069E16418C61D96002872B2 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		2069E16618C61D9C002872B2 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		2069E16C18C62A79002872B2 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		2069E16F18C64E92002872B2 /* IRTTweetPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IRTTweetPosition.h; path = DataModel/objects/IRTTweetPosition.h; sourceTree = "<group>"; };
+		2069E17018C64E92002872B2 /* IRTTweetPosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IRTTweetPosition.m; path = DataModel/objects/IRTTweetPosition.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2069E16E18C62CCB002872B2 /* Social.framework in Frameworks */,
 				2069E16718C61D9C002872B2 /* MapKit.framework in Frameworks */,
 				2069E16518C61D96002872B2 /* CoreData.framework in Frameworks */,
 				203A207518C5F95B00156E43 /* CoreGraphics.framework in Frameworks */,
@@ -118,6 +121,7 @@
 		203A207118C5F95B00156E43 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2069E16C18C62A79002872B2 /* Social.framework */,
 				2069E16618C61D9C002872B2 /* MapKit.framework */,
 				2069E16418C61D96002872B2 /* CoreData.framework */,
 				203A207218C5F95B00156E43 /* Foundation.framework */,
@@ -137,8 +141,6 @@
 				203A208418C5F95B00156E43 /* Main.storyboard */,
 				203A208718C5F95B00156E43 /* IRTFirstViewController.h */,
 				203A208818C5F95B00156E43 /* IRTFirstViewController.m */,
-				203A208A18C5F95B00156E43 /* IRTSecondViewController.h */,
-				203A208B18C5F95B00156E43 /* IRTSecondViewController.m */,
 				203A208D18C5F95B00156E43 /* Images.xcassets */,
 				203A207918C5F95B00156E43 /* Supporting Files */,
 			);
@@ -190,6 +192,8 @@
 			children = (
 				2069E15A18C6035B002872B2 /* IRTTweet.h */,
 				2069E15B18C6035B002872B2 /* IRTTweet.m */,
+				2069E16F18C64E92002872B2 /* IRTTweetPosition.h */,
+				2069E17018C64E92002872B2 /* IRTTweetPosition.m */,
 			);
 			name = objects;
 			sourceTree = "<group>";
@@ -295,7 +299,7 @@
 				2069E16318C60C05002872B2 /* IRTDataManager.m in Sources */,
 				203A208318C5F95B00156E43 /* IRTAppDelegate.m in Sources */,
 				203A207F18C5F95B00156E43 /* main.m in Sources */,
-				203A208C18C5F95B00156E43 /* IRTSecondViewController.m in Sources */,
+				2069E17118C64E92002872B2 /* IRTTweetPosition.m in Sources */,
 				2069E15C18C6035B002872B2 /* IRTTweet.m in Sources */,
 				2069E15918C60158002872B2 /* ItwRemoteTestModel.xcdatamodeld in Sources */,
 				203A208918C5F95B00156E43 /* IRTFirstViewController.m in Sources */,

@@ -8,6 +8,8 @@
 
 #import "IRTDataManager.h"
 
+#import "IRTFirstViewController.h"
+
 @implementation IRTDataManager
 
 @synthesize mainContext = _mainContext;
@@ -15,7 +17,7 @@
 @synthesize managedObjectModel = _managedObjectModel;
 @synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
 
-//@synthesize appDelegate;
+@synthesize streamingConnection;
 
 - (id)init {
     
@@ -161,6 +163,116 @@
 - (NSURL *)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+#pragma mark - Twitter Streaming Related Code
+
+- (BOOL)userHasAccessToTwitter
+{
+    return [SLComposeViewController
+            isAvailableForServiceType:SLServiceTypeTwitter];
+}
+
+- (void)startStreamingWithKeyword:(NSString *)aKeyword
+{
+    //First, we need to obtain the account instance for the user's Twitter account
+    ACAccountStore *store = [[ACAccountStore alloc] init];
+    ACAccountType *twitterAccountType = [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    
+    //  Request permission from the user to access the available Twitter accounts
+    [store requestAccessToAccountsWithType:twitterAccountType
+                                   options:nil
+                                completion:^(BOOL granted, NSError *error) {
+                                    if (!granted) {
+                                        // The user rejected your request
+                                        NSLog(@"User rejected access to the account.");
+                                    }
+                                    else {
+                                        // Grab the available accounts
+                                        NSArray *twitterAccounts = [store accountsWithAccountType:twitterAccountType];
+                                        if ([twitterAccounts count] > 0) {
+                                            ACAccount *account = [twitterAccounts lastObject];
+                                            
+                                            NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1.1/statuses/filter.json"];
+                                            NSDictionary *params = @{@"track" : aKeyword};
+                                            
+                                            SLRequest *request = [SLRequest requestForServiceType:SLServiceTypeTwitter
+                                                                                    requestMethod:SLRequestMethodPOST
+                                                                                              URL:url
+                                                                                       parameters:params];
+                                            
+                                            [request setAccount:account];
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                streamingConnection = [NSURLConnection connectionWithRequest:[request preparedURLRequest] delegate:self];
+                                                [streamingConnection start];
+                                            });
+                                        } // if ([twitterAccounts count] > 0)
+                                    } // if (granted)
+                                }];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    
+    NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSArray *splitRes = [dataString componentsSeparatedByString:@"\r\n"];
+    
+    for (int i = 0; i < splitRes.count; i++) {
+        
+        NSData *ndata = [[splitRes objectAtIndex:i] dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:ndata options:0 error:nil];
+        
+        NSMutableArray *res = [[NSMutableArray alloc] init];
+        
+        if (json) {
+            
+            [self.backgroundContext performBlockAndWait:^{
+                IRTTweet *t = [IRTTweet loadFromJSON:json inManagedObjectContext:self.backgroundContext];
+                if (t) {
+                    [self.backgroundContext save:nil];
+                    [res addObject:t];
+                }
+            }];
+            
+            [self manageImportNewTwitterData:res];
+            
+        }
+    }
+    
+}
+
+-(void) launchTwitterStreamingRequestWithRecipient:(IRTFirstViewController *)vc{
+    viewController = vc;
+    [self startStreamingWithKeyword:@"I"];
+}
+
+-(void) stopTwitterStreamingRequest {
+    viewController = nil;
+    [streamingConnection cancel];
+}
+
+-(void)manageImportNewTwitterData:(NSArray *)dataToImport{
+    if (viewController) {
+        [viewController addPinPointsForNewTweets:dataToImport];
+    }
+}
+
+-(NSArray *) getTweetsForMap{
+    
+    __block
+    NSArray *res;
+    
+    [self.mainContext performBlockAndWait:^{
+        NSError *error = nil;
+        NSFetchRequest *request = [[NSFetchRequest alloc] initWithEntityName:@"IRTTweet"];
+        [request setReturnsObjectsAsFaults:NO];
+        [request setReturnsDistinctResults:TRUE];
+        //[request setSortDescriptors:[[NSArray alloc] initWithObjects:[NSSortDescriptor sortDescriptorWithKey:@"idctm" ascending:FALSE], nil]];
+        res = [self.mainContext executeFetchRequest:request error:&error];
+        
+    }];
+    
+    return res;
+    
 }
 
 @end

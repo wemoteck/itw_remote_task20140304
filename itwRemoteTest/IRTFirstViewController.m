@@ -8,19 +8,68 @@
 
 #import "IRTFirstViewController.h"
 
-@interface IRTFirstViewController ()
+#import "IRTAppDelegate.h"
+#import "IRTDataManager.h"
 
-@end
+#import "IRTTweet.h"
+#import "IRTTweetPosition.h"
 
 @implementation IRTFirstViewController
 
+@synthesize dataManager;
 @synthesize mapView;
-@synthesize searchBar;
-@synthesize toolBar;
+
+-(void) viewDidAppear:(BOOL)animated{
+    /*
+    NSArray *datas = [dataManager getTweetsForMap];
+    
+    for (int i = 0; i < datas.count; i++) {
+        IRTTweet *tweet = [datas objectAtIndex:i];
+        
+        CLLocationCoordinate2D  ctrpoint;
+        ctrpoint.latitude = tweet.latitude.doubleValue;
+        ctrpoint.longitude = tweet.longitude.doubleValue;
+        IRTTweetPosition *addAnnotation = [[IRTTweetPosition alloc] init];
+        [addAnnotation setCoordinate:ctrpoint];
+        [mapView addAnnotation:addAnnotation];
+        
+    }
+    */
+}
+
+-(void)addPinPointsForNewTweets:(NSArray *)newTweets{
+    for (int i = 0; i < newTweets.count; i++) {
+        IRTTweet *tweet = [newTweets objectAtIndex:i];
+        
+        CLLocationCoordinate2D  ctrpoint;
+        ctrpoint.latitude = tweet.latitude.doubleValue;
+        ctrpoint.longitude = tweet.longitude.doubleValue;
+        IRTTweetPosition *addAnnotation = [[IRTTweetPosition alloc] init];
+        [addAnnotation setCoordinate:ctrpoint];
+        [mapView addAnnotation:addAnnotation];
+        
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [dataManager launchTwitterStreamingRequestWithRecipient:self];
+    
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    
+    [dataManager stopTwitterStreamingRequest];
+    [dataManager cleanUpRequests];
+    
+    [super viewWillDisappear:animated];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    dataManager = [[IRTDataManager alloc] init];
 }
 
 - (void)didReceiveMemoryWarning
@@ -30,7 +79,5 @@
 }
 
 #pragma mark MKMapViewDelegate
-
-#pragma mark UISearchBarDelegate
 
 @end

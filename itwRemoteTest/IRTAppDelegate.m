@@ -8,17 +8,13 @@
 
 #import "IRTAppDelegate.h"
 
-#import "IRTDataManager.h"
-
 @implementation IRTAppDelegate
 
-@synthesize dataManager;
 
-NSString * const twitterAPIkey = @"RQApeOdWkvj3PtR9xPIrnw";
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
     return YES;
 }
 							
@@ -42,10 +38,6 @@ NSString * const twitterAPIkey = @"RQApeOdWkvj3PtR9xPIrnw";
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    
-    if (! dataManager) {
-        dataManager = [[IRTDataManager alloc] init];
-    }
     
 }
 

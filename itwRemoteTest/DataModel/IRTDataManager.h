@@ -8,10 +8,18 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import <Accounts/Accounts.h>
+#import <Social/Social.h>
 
-@interface IRTDataManager : NSObject{
+#import "IRTTweet.h"
+#import "IRTAppDelegate.h"
+
+@class IRTFirstViewController;
+
+@interface IRTDataManager : NSObject<NSURLConnectionDelegate>{
     
     NSOperationQueue *queue;
+    IRTFirstViewController *viewController;
     
 }
 
@@ -21,11 +29,23 @@
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-- (void)saveContext;
-- (NSURL *)applicationDocumentsDirectory;
+@property (nonatomic, strong) NSURLConnection *streamingConnection;
+
+- (void) saveContext;
+- (NSURL *) applicationDocumentsDirectory;
 
 -(void)cleanUpRequests;
 
-//@property(nonatomic, retain) CTMAppDelegate *appDelegate;
+- (BOOL) userHasAccessToTwitter;
+
+- (void) startStreamingWithKeyword:(NSString *)aKeyword;
+
+-(void) launchTwitterStreamingRequestWithRecipient:(IRTFirstViewController *)vc;
+
+-(void) stopTwitterStreamingRequest;
+
+-(void) manageImportNewTwitterData:(NSArray *)dataToImport;
+
+-(NSArray *) getTweetsForMap;
 
 @end

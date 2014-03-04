@@ -10,12 +10,14 @@
 
 #import <MapKit/MapKit.h>
 
-@interface IRTFirstViewController : UIViewController<MKMapViewDelegate, UISearchBarDelegate>
+@class IRTDataManager;
+
+@interface IRTFirstViewController : UIViewController<MKMapViewDelegate>
+
+@property (nonatomic, retain) IRTDataManager *dataManager;
 
 @property (nonatomic, retain) IBOutlet MKMapView *mapView;
 
-@property (nonatomic, retain) IBOutlet UISearchBar *searchBar;
-
-@property (nonatomic, retain) IBOutlet UIToolbar *toolBar;
+-(void)addPinPointsForNewTweets:(NSArray *)newTweets;
 
 @end
