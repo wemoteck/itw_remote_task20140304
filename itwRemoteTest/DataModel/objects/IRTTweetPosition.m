@@ -10,6 +10,8 @@
 
 @implementation IRTTweetPosition
 
+@synthesize tweetId;
+
 #pragma mark -
 #pragma mark Getters and setters
 

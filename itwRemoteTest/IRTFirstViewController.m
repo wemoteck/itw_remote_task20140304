@@ -20,7 +20,7 @@
 @synthesize mapView;
 
 -(void) viewDidAppear:(BOOL)animated{
-    /*
+    
     NSArray *datas = [dataManager getTweetsForMap];
     
     for (int i = 0; i < datas.count; i++) {
@@ -31,10 +31,11 @@
         ctrpoint.longitude = tweet.longitude.doubleValue;
         IRTTweetPosition *addAnnotation = [[IRTTweetPosition alloc] init];
         [addAnnotation setCoordinate:ctrpoint];
+        [addAnnotation setTweetId:tweet.twitterStringId];
         [mapView addAnnotation:addAnnotation];
         
     }
-    */
+    
 }
 
 -(void)addPinPointsForNewTweets:(NSArray *)newTweets{
@@ -49,6 +50,24 @@
         [mapView addAnnotation:addAnnotation];
         
     }
+}
+
+-(void)removePinPointsForTweetId:(NSString *)tweetId{
+    
+    NSLog(@"tweetId %@", tweetId);
+    
+    NSPredicate *predicate =
+    [NSPredicate predicateWithFormat:@"self.tweetId = %@", tweetId];
+    NSArray *tempDatas = [mapView.annotations filteredArrayUsingPredicate:predicate];
+    
+    if (tempDatas.count > 0) {
+        
+        NSLog(@"AFTER FOR A");
+        
+        IRTTweetPosition *annotationToRemove = (IRTTweetPosition *)[tempDatas objectAtIndex:0];
+        [mapView removeAnnotation:annotationToRemove];
+    }
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated {

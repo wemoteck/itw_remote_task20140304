@@ -14,6 +14,8 @@
 #import "IRTTweet.h"
 #import "IRTAppDelegate.h"
 
+#define TOO_OLD_TO_STAY 5 //seconds
+
 @class IRTFirstViewController;
 
 @interface IRTDataManager : NSObject<NSURLConnectionDelegate>{
@@ -47,5 +49,7 @@
 -(void) manageImportNewTwitterData:(NSArray *)dataToImport;
 
 -(NSArray *) getTweetsForMap;
+
+-(void) cleanTooOldTweets;
 
 @end

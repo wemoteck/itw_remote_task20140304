@@ -16,6 +16,8 @@
     CLLocationCoordinate2D _coordinate;
 }
 
+@property (nonatomic, retain) NSString *tweetId;
+
 // Getters and setters
 - (void)setTitle:(NSString *)title;
 - (void)setSubtitle:(NSString *)subtitle;
