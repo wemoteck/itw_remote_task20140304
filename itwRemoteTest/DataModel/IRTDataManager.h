@@ -64,9 +64,6 @@
 //Close the connection.
 -(void) stopTwitterStreamingRequest;
 
-//End of treatment for tweets last imported.
--(void) manageImportNewTwitterData:(NSArray *)dataToImport;
-
 //Main thread / UI results.
 -(NSArray *) getTweetsForMap;
 

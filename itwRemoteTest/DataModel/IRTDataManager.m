@@ -19,10 +19,13 @@
 
 @synthesize streamingConnection;
 
+//Initialize all aspects of Core Data Managements
 - (id)init {
     
     self = [super init];
     if (self) {
+        
+        //Ensure propagation of events through processes
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSavePrivateQueueContext:)name:NSManagedObjectContextDidSaveNotification object:[self backgroundContext]];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSaveMainQueueContext:) name:NSManagedObjectContextDidSaveNotification object:[self mainContext]];
         
@@ -121,26 +124,6 @@
     if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
         /*
          Replace this implementation with code to handle the error appropriately.
-         
-         abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-         
-         Typical reasons for an error here include:
-         * The persistent store is not accessible;
-         * The schema for the persistent store is incompatible with current managed object model.
-         Check the error message to determine what the actual problem was.
-         
-         
-         If the persistent store is not accessible, there is typically something wrong with the file path. Often, a file URL is pointing into the application's resources directory instead of a writeable directory.
-         
-         If you encounter schema incompatibility errors during development, you can reduce their frequency by:
-         * Simply deleting the existing store:
-         [[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil]
-         
-         * Performing automatic lightweight migration by passing the following dictionary as the options parameter:
-         @{NSMigratePersistentStoresAutomaticallyOption:@YES, NSInferMappingModelAutomaticallyOption:@YES}
-         
-         Lightweight migration will only work for a limited set of schema changes; consult "Core Data Model Versioning and Data Migration Programming Guide" for details.
-         
          */
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
@@ -159,8 +142,8 @@
 
 #pragma mark - Twitter Streaming Related Code
 
-- (BOOL)userHasAccessToTwitter
-{
+//We check the application will have access to a Twitter account credentials.
+- (BOOL)userHasAccessToTwitter {
     return [SLComposeViewController
             isAvailableForServiceType:SLServiceTypeTwitter];
 }
@@ -203,78 +186,82 @@
                                 }];
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+-(void) launchTwitterStreamingRequestWithRecipient:(IRTFirstViewController *)vc{
     
+    //Check Twitter Account Credentials access
+    if ([self userHasAccessToTwitter]) {
+        //Retain reference to the view controller to update
+        viewController = vc;
+        //Launch the streaming data import
+        [self startStreamingWithKeyword:@"I"];
+    }
+    
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    //New data received are send in background to be analysed
     [self performSelectorInBackground:@selector(bgTreatmentNewData:) withObject:data];
     
 }
 
--(void) launchTwitterStreamingRequestWithRecipient:(IRTFirstViewController *)vc{
-    viewController = vc;
-    [self startStreamingWithKeyword:@"I"];
-}
-
 -(void) stopTwitterStreamingRequest {
-    viewController = nil;
+    //Stop the data import
     [streamingConnection cancel];
+    //Remove the reference to the view to update
+    viewController = nil;
 }
 
 -(void)bgTreatmentNewData:(NSData *)data {
     
+    //We clean old tweets
+    [self cleanTooOldTweets];
+    
+    //We convert imported data in readable string
     NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    //According to the Twitter Documentation, each tweet is separated by the characters \r\n
+    //and are not send in an array
     NSArray *splitRes = [dataString componentsSeparatedByString:@"\r\n"];
     
     NSMutableArray *res = [[NSMutableArray alloc] init];
     
     for (int i = 0; i < splitRes.count; i++) {
         
+        //conversion of each tweet data into a proper json dictionnary
         NSData *ndata = [[splitRes objectAtIndex:i] dataUsingEncoding:NSUTF8StringEncoding];
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:ndata options:0 error:nil];
         
         if (json) {
-            
+            //We import json dictionnary as a proper IRTTweet object
             [self.backgroundContext performBlockAndWait:^{
                 IRTTweet *t = [IRTTweet loadFromJSON:json inManagedObjectContext:self.backgroundContext];
                 if (t) {
+                    //If no geographical coordinate are available, we do nothing
                     [self.backgroundContext save:nil];
-                    [res addObject:t];
+                    [res addObject:t.twitterStringId];
                 }
             }];
             
         }
     }
     
-    [self manageImportNewTwitterData:res];
-    
-    
-}
-
--(void)manageImportNewTwitterData:(NSArray *)dataToImport{
-    
-    [self cleanTooOldTweets];
-    
     if (viewController) {
-        
-        NSMutableArray *res = [[NSMutableArray alloc] init];
-        
-        for (int a = 0; a < dataToImport.count; a++) {
-            IRTTweet *tweet = [dataToImport objectAtIndex:a];
-            //qq
-            [res addObject:tweet.twitterStringId];
-        }
         
         [self performSelectorOnMainThread:@selector(sendNewTwitterData:) withObject:res waitUntilDone:TRUE];
         
     }
+    
+    
 }
 
 -(void)sendNewTwitterData:(NSArray *)dataToImport{
     
     NSFetchRequest *request=[[NSFetchRequest alloc] init];
     request.entity = [NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.mainContext];
+    //Selection of all tweeds recently imported but in the main context
     request.predicate = [NSPredicate predicateWithFormat:@"self.twitterStringId IN %@", dataToImport];
     NSArray *res = [self.mainContext executeFetchRequest:request error:nil];
     
+    //send them to the view for updating the map.
     [viewController performSelectorOnMainThread:@selector(addPinPointsForNewTweets:) withObject:res waitUntilDone:TRUE];
     
 }
@@ -284,6 +271,8 @@
     __block
     NSArray *res;
     
+    //UI action = main thread
+    //All tweets are returned.
     [self.mainContext performBlockAndWait:^{
         NSError *error = nil;
         NSFetchRequest *request = [[NSFetchRequest alloc] initWithEntityName:@"IRTTweet"];
@@ -297,14 +286,17 @@
     
 }
 
+//In background, this function requests too old tweets and delete them.
 -(void)cleanTooOldTweets{
     
     __block
     NSMutableArray *toDelete = [[NSMutableArray alloc] init];
     
+    //Because deletion involves changes in data base, we do it with the background context
     [self.backgroundContext performBlockAndWait:^{
         NSFetchRequest *request=[[NSFetchRequest alloc] init];
         request.entity=[NSEntityDescription entityForName:@"IRTTweet" inManagedObjectContext:self.backgroundContext];
+        //Too old means created before a date.
         request.predicate=[NSPredicate predicateWithFormat:@"creation < %@",[NSDate dateWithTimeIntervalSinceNow:-TOO_OLD_TO_STAY]];
         NSArray *res = [self.backgroundContext executeFetchRequest:request error:nil];
         
@@ -312,13 +304,18 @@
             IRTTweet *tweetToDelete = [res objectAtIndex:j];
             [self.backgroundContext deleteObject:tweetToDelete];
             
+            //We keep record of deleted tweets' ids in order to update pin points.
             [toDelete addObject:tweetToDelete.twitterStringId];
             
         }
+        //We save the deletion.
         [self.backgroundContext save:nil];
     }];
     
-    [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:toDelete waitUntilDone:TRUE];
+    if (viewController) {
+        //Update the map, UI action, main thread
+        [viewController performSelectorOnMainThread:@selector(removePinPointsForOldTweets:) withObject:toDelete waitUntilDone:TRUE];
+    }
     
 }
 
